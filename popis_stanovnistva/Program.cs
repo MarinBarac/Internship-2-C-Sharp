@@ -52,7 +52,7 @@ namespace popis_stanovnistva
                     brisanjeSvihStanovnika(popisStanovnika);
                     break;
                 case 8:
-                    uredivanjeStanovnika();
+                    uredivanjeStanovnika(popisStanovnika);
                     break;
                 case 9:
                     ispisStatistika();
@@ -66,7 +66,7 @@ namespace popis_stanovnistva
         }
 
 
-        static string stvoriOIB(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        static string stvoriOIB()
         {
             Console.Clear();
             Console.WriteLine("Unesite OIB: ");
@@ -117,50 +117,50 @@ namespace popis_stanovnistva
             }
             return surname;
         }
-        static int stvoriGodinu()
+        static string stvoriGodinu()
         {
             Console.Clear();
             Console.WriteLine("Unesite godinu rodenja osobe:");
-            var year = int.Parse(Console.ReadLine());
-            if (year < (DateTime.Now.Year - 110) || year > DateTime.Now.Year)
+            var year = Console.ReadLine();
+            if (int.Parse(year) < (DateTime.Now.Year - 110) || int.Parse(year) > DateTime.Now.Year)
             {
-                while (year < (DateTime.Now.Year - 110) || year > DateTime.Now.Year )
+                while (int.Parse(year) < (DateTime.Now.Year - 110) || int.Parse(year) > DateTime.Now.Year )
                 {
                     Console.Clear();
                     Console.WriteLine($"Godina rodenja mora biti u intervalu od {DateTime.Now.Year - 110} do {DateTime.Now.Year}!");
                     Console.WriteLine("Unesite godinu rodenja osobe:");
-                    year = int.Parse(Console.ReadLine());
+                    year = Console.ReadLine();
                 }
             }
             return year;
         }
 
-        static int stvoriMjesec()
+        static string stvoriMjesec()
         {
             Console.Clear();
             Console.WriteLine("Unesite broj mjeseca u kojem se osoba rodila: ");
-            var month = int.Parse(Console.ReadLine());
-            if (month < 1 || month > 12)
+            var month = Console.ReadLine();
+            if (int.Parse(month) < 1 || int.Parse(month) > 12)
             {
-                while (month < 1 || month > 12)
+                while (int.Parse(month) < 1 || int.Parse(month) > 12)
                 {
                     Console.Clear();
                     Console.WriteLine("Broj mjeseca mora biti u rasponu od 1 do 12!");
                     Console.WriteLine("Unesite mjesec u kojem se osoba rodila:");
-                    month = int.Parse(Console.ReadLine());
+                    month = Console.ReadLine();
                 }
             }
             return month;
         }
 
-        static int stvoriDan(int year, int month)
+        static string stvoriDan(string year, string month)
         {
             Console.Clear();
             Console.WriteLine("Unesite dan u mjesecu kada se osoba rodila:");
             var day = int.Parse(Console.ReadLine());
-            if (month == 2)
+            if (int.Parse(month) == 2)
             {
-                if (year % 4 == 0)
+                if (int.Parse(year) % 4 == 0)
                 {
                     if (day < 1 || day > 29)
                     {
@@ -187,7 +187,7 @@ namespace popis_stanovnistva
                     }
                 }
             }
-            if (month % 2 == 0 || month == 9 || month == 11)
+            if (int.Parse(month) % 2 == 0 || int.Parse(month) == 9 || int.Parse(month) == 11)
             {
                 if (day < 1 || day > 30)
                 {
@@ -200,7 +200,7 @@ namespace popis_stanovnistva
                     }
                 }
             }
-            if (month % 2 == 1 || month == 10 || month == 12)
+            if (int.Parse(month) % 2 == 1 || int.Parse(month) == 10 || int.Parse(month) == 12)
             {
                 if (day < 1 || day > 31)
                 {
@@ -213,7 +213,18 @@ namespace popis_stanovnistva
                     }
                 }
             }
-            return day;
+
+             var day_string = day.ToString();
+             if (day < 10)
+                day_string = '0' + day_string;
+
+            return day_string;
+        }
+
+        static DateTime stvoriDatum(string year, string month, string day)
+        {
+            var date = DateTime.ParseExact(month + '/' + day + '/' + year, "M/dd/yyyy", null);
+            return date;
         }
         static void ispisOsobe(KeyValuePair<string, (string nameAndSurname, DateTime dateOfBirth)> person)
         {
@@ -314,8 +325,7 @@ namespace popis_stanovnistva
                 goto Start;
             }
             Console.Clear();
-            oib = stvoriOIB(popisStanovnika);
-            Console.WriteLine(oib);
+            oib = stvoriOIB();
             if (!popisStanovnika.ContainsKey(oib))
             {
                 Console.WriteLine("Osoba s tim OIB-om ne postoji!");
@@ -354,10 +364,7 @@ namespace popis_stanovnistva
             var month = stvoriMjesec();
             
             var day = stvoriDan(year, month);
-            var day_string = day.ToString();
-            if (day < 10)
-                day_string = '0' + day_string;
-            var date = DateTime.ParseExact(month.ToString() + '/' + day_string + '/' + year.ToString(), "M/dd/yyyy", null);
+            var date = stvoriDatum(year, month, day);
 
             var count = 0;
             foreach (var person in popisStanovnika)
@@ -376,7 +383,7 @@ namespace popis_stanovnistva
         }
         static int unosStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
         {
-            var oib = stvoriOIB(popisStanovnika);
+            var oib = stvoriOIB();
             if (popisStanovnika.ContainsKey(oib))
             {
                 Console.WriteLine("Osoba s takvim OIB-om vec postoji!");
@@ -395,17 +402,14 @@ namespace popis_stanovnistva
             var month = stvoriMjesec();
 
             var day = stvoriDan(year, month);
-            var day_string = day.ToString();
-            if (day < 10)
-                day_string = '0' + day_string;
             
-            var date = DateTime.ParseExact(month.ToString() + '/' + day_string + '/' + year.ToString(), "M/dd/yyyy", null);
+            var date = stvoriDatum(year, month, day);
             popisStanovnika.Add(oib, (name + " " + surname, date));
             return 0;
         }
         static int brisanjeOIB(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
         {
-            var oib = stvoriOIB(popisStanovnika);
+            var oib = stvoriOIB();
             if (popisStanovnika.ContainsKey(oib))
             {
                 popisStanovnika.Remove(oib);
@@ -427,12 +431,9 @@ namespace popis_stanovnistva
             var year = stvoriGodinu();
             var month = stvoriMjesec();
             var day = stvoriDan(year, month);
-            var day_string = day.ToString();
-            if (day < 10)
-                day_string = '0' + day_string;
-
+            
             var nameAndSurname = name + " " + surname;
-            var date = DateTime.ParseExact(month.ToString() + '/' + day_string + '/' + year.ToString(), "M/dd/yyyy", null);
+            var date = stvoriDatum(year, month, day);
             var count = 0;
             foreach (var person in popisStanovnika)
             {
@@ -474,7 +475,7 @@ namespace popis_stanovnistva
             return 0;
         }
 
-        static int uredivanjeStanovnika()
+        static int uredivanjeStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
         {
             Console.Clear();
 
@@ -486,8 +487,120 @@ namespace popis_stanovnistva
             Console.WriteLine("Unesite jedan od ponudenih brojeva: ");
             var choice = int.Parse(Console.ReadLine());
 
-            Console.WriteLine("Vas izbor je: " + choice);
-            return 1;
+            switch (choice)
+            {
+                case 1:
+                    return urediOibStanovnika(popisStanovnika);
+                case 2:
+                    return urediImePrezimeStanovnika(popisStanovnika);
+                case 3:
+                    return urediDatumStanovnika(popisStanovnika);
+                case 4:
+                    return 0;
+                default:
+                    Console.WriteLine("Niste unjeli tocan broj!");
+                    Console.WriteLine("Pritisnite 'enter' za nastavak!");
+                    Console.ReadLine();
+                    return uredivanjeStanovnika(popisStanovnika);
+            }
+
+            
+            return 0;
+        }
+
+        static int urediOibStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            Console.Clear();
+            var oib = stvoriOIB();
+            while (popisStanovnika.ContainsKey(oib) is false)
+            {
+                Console.WriteLine("Uneseni OIB se ne nalazi u bazi podataka. Molimo vas pokusajte ponovno.");
+                Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+                Console.ReadLine();
+                oib = stvoriOIB();
+            }
+            var person = pronadiOIB(popisStanovnika, oib);
+            Console.WriteLine("Sada trebate unjeti novi OIB stanovnika!");
+            Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+            Console.ReadLine();
+            oib = stvoriOIB();
+
+            while (popisStanovnika.ContainsKey(oib) is true)
+            {
+                Console.WriteLine("Uneseni OIB se vec nalazi u bazi podataka. Molimo vas pokusajte ponovno.");
+                Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+                Console.ReadLine();
+                oib = stvoriOIB();
+            }
+            popisStanovnika.Remove(person.Key);
+            popisStanovnika.Add(oib, (person.Value.nameAndSurname, person.Value.dateOfBirth));
+
+
+            Console.Clear();
+            Console.WriteLine($"Novi OIB je: {oib}.");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'.");
+            Console.ReadLine();
+            return 0;
+
+        }
+        
+        static int urediImePrezimeStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            Console.Clear();
+            var oib = stvoriOIB();
+            while (popisStanovnika.ContainsKey(oib) is false)
+            {
+                Console.WriteLine("Uneseni OIB se ne nalazi u bazi podataka. Molimo vas pokusajte ponovno.");
+                Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+                Console.ReadLine();
+                oib = stvoriOIB();
+            }
+            var person = pronadiOIB(popisStanovnika, oib);
+            Console.WriteLine("U sljedecem koraku cete trebati unjeti novo ime i prezime osobe.");
+            Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+            Console.ReadLine();
+
+            var name = stvoriIme();
+            var surname = stvoriPrezime();
+            popisStanovnika.Remove(person.Key);
+            popisStanovnika.Add(person.Key, (name + " " + surname, person.Value.dateOfBirth));
+
+            Console.Clear();
+            Console.WriteLine($"Novo ime i prezime je: {name + " " + surname}.");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'.");
+            Console.ReadLine();
+            return 0;
+
+        }
+        static int urediDatumStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            Console.Clear();
+            var oib = stvoriOIB();
+            while (popisStanovnika.ContainsKey(oib) is false)
+            {
+                Console.WriteLine("Uneseni OIB se ne nalazi u bazi podataka. Molimo vas pokusajte ponovno.");
+                Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+                Console.ReadLine();
+                oib = stvoriOIB();
+            }
+            var person = pronadiOIB(popisStanovnika, oib);
+            Console.WriteLine("U sljedecem koraku cete trebati unjeti novi datum rodenja osobe.");
+            Console.WriteLine("Za nastavak pritisnite tipku 'enter'.");
+            Console.ReadLine();
+
+            var year = stvoriGodinu();
+            var month = stvoriMjesec();
+            var day = stvoriDan(year, month);
+            var date = stvoriDatum(year, month, day);
+
+            popisStanovnika.Remove(person.Key);
+            popisStanovnika.Add(person.Key, (person.Value.nameAndSurname, date));
+            Console.Clear();
+            Console.WriteLine($"Novi datum rodenja je: {date.ToShortDateString()}.");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'.");
+            Console.ReadLine();
+            return 0;
+
         }
 
         static int ispisStatistika()
