@@ -43,20 +43,15 @@ namespace popis_stanovnistva
                 case 4:
                     return unosStanovnika(popisStanovnika);
                 case 5:
-                    brisanjeOIB(popisStanovnika);
-                    break;
+                    return brisanjeOIB(popisStanovnika);
                 case 6:
-                    brisanjeImePrezimeDatum(popisStanovnika);
-                    break;
+                    return brisanjeImePrezimeDatum(popisStanovnika);
                 case 7:
-                    brisanjeSvihStanovnika(popisStanovnika);
-                    break;
-                case 8:
-                    uredivanjeStanovnika(popisStanovnika);
-                    break;
-                case 9:
-                    ispisStatistika();
-                    break;
+                    return brisanjeSvihStanovnika(popisStanovnika);
+                 case 8:
+                    return uredivanjeStanovnika(popisStanovnika);
+                 case 9:
+                    return ispisStatistika(popisStanovnika);
                 case 0:
                     return 1;
                 default:
@@ -261,6 +256,8 @@ namespace popis_stanovnistva
                         flag = silazniIspis(popisStanovnika);
                         break;
                     case 4:
+                        return 0;
+                    default:
                         return 0;
                 }
             }
@@ -603,7 +600,7 @@ namespace popis_stanovnistva
 
         }
 
-        static int ispisStatistika()
+        static int ispisStatistika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
         {
             Console.Clear();
 
@@ -620,8 +617,334 @@ namespace popis_stanovnistva
             Console.WriteLine("     0 - izlaz iz aplikacije");
             var choice = int.Parse(Console.ReadLine());
 
-            Console.WriteLine("Vas izbor je: " + choice);
-            return 1;
+            switch (choice)
+            {
+                case 1:
+                    return ispisZaposleniNezaposleni(popisStanovnika);
+                case 2:
+                    return ispisNajcesceIme(popisStanovnika);
+                case 3:
+                    return ispisNajcescePrezime(popisStanovnika);
+                 case 4:
+                    return ispisNajcesciDatum(popisStanovnika);
+                case 5:
+                    return ispisGodisnjaDoba(popisStanovnika);
+                case 6:
+                    return ispisNajmladegStanovnika(popisStanovnika);
+                case 7:
+                    return ispisNajstarijegStanovnika(popisStanovnika);
+                case 8:
+                    return ispisProsjecanBrojGodina(popisStanovnika);
+                case 9:
+                    return ispisMedijanGodina(popisStanovnika);
+                case 0:
+                    return 1;
+                default:
+                    Console.WriteLine("Niste unjeli tocan broj.");
+                    Console.WriteLine("Za povratak u glavni izbornik pritisnite 'enter'!");
+                    Console.ReadLine();
+                    return 0;
+            }
+
+
+            return 0;
+        }
+
+        static int ispisZaposleniNezaposleni(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var zaposleni = 0;
+            var nezaposleni = 0;
+            var svi = 0;
+
+            foreach (var person in popisStanovnika)
+            {
+                if ((DateTime.Now.Year - person.Value.dateOfBirth.Year) < 24 || (DateTime.Now.Year - person.Value.dateOfBirth.Year) > 64)
+                    nezaposleni++;
+                else
+                    zaposleni++;
+                svi++;
+            }
+            Console.Clear();
+            Console.WriteLine($"Zaposleni: {zaposleni}");
+            Console.WriteLine($"U bazi podataka je ukupno {svi} osoba.");
+            Console.WriteLine($"Udio zaposlenih je: {Math.Round(((double)zaposleni / svi) * 100)}%");
+            Console.WriteLine($"Udio nezaposlenih je: {Math.Round(((double)nezaposleni / svi) * 100)}%");
+            Console.WriteLine("--------------------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
+        }
+
+        static int ispisNajcesceIme(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var popisImena = new Dictionary<string , int>();
+            foreach (var person in popisStanovnika)
+            {
+                var name = person.Value.nameAndSurname.Substring(0, person.Value.nameAndSurname.IndexOf(' '));
+                if (popisImena.ContainsKey(name))
+                {
+                    for (var i = 0; i < popisImena.Count(); i++)
+                    {
+                        if (popisImena.ElementAt(i).Key == name)
+                        {
+                            var count = popisImena.ElementAt(i).Value + 1;
+                            popisImena.Remove(popisImena.ElementAt(i).Key);
+                            popisImena.Add(name, count);
+                        }
+                    }
+                }
+                else
+                {
+                    popisImena.Add(name, 1);
+                }
+            }
+            var maxCount = 0;
+            var maxName = " ";
+            foreach (var name in popisImena)
+            {
+                if (name.Value > maxCount)
+                {
+                    maxCount = name.Value;
+                    maxName = name.Key;
+                }
+            }
+          
+
+            Console.Clear();
+            Console.WriteLine($"Najcesce ime je {maxName} i ima ga {maxCount} ljudi.");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
+        }
+
+        static int ispisNajcescePrezime(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var popisPrezimena = new Dictionary<string, int>();
+            foreach (var person in popisStanovnika)
+            {
+                var surname = person.Value.nameAndSurname.Substring(person.Value.nameAndSurname.IndexOf(' ') + 1);
+                if (popisPrezimena.ContainsKey(surname))
+                {
+                    for (var i = 0; i < popisPrezimena.Count(); i++)
+                    {
+                        if (popisPrezimena.ElementAt(i).Key == surname)
+                        {
+                            var count = popisPrezimena.ElementAt(i).Value + 1;
+                            popisPrezimena.Remove(popisPrezimena.ElementAt(i).Key);
+                            popisPrezimena.Add(surname, count);
+                        }
+                    }
+                }
+                else
+                {
+                    popisPrezimena.Add(surname, 1);
+                }
+            }
+            var maxCount = 0;
+            var maxSurname = " ";
+            foreach (var surname in popisPrezimena)
+            {
+                if (surname.Value > maxCount)
+                {
+                    maxCount = surname.Value;
+                    maxSurname = surname.Key;
+                }
+            }
+
+            Console.Clear();
+            Console.WriteLine($"Najcesce prezime je {maxSurname} i ima ga {maxCount} ljudi.");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
+        }
+
+        static int ispisNajcesciDatum(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var popisDatuma = new Dictionary<DateTime, int>();
+            foreach (var person in popisStanovnika)
+            {
+                var date = person.Value.dateOfBirth;
+                if (popisDatuma.ContainsKey(date))
+                {
+                    for (var i = 0; i < popisDatuma.Count(); i++)
+                    {
+                        if (popisDatuma.ElementAt(i).Key == date)
+                        {
+                            var count = popisDatuma.ElementAt(i).Value + 1;
+                            popisDatuma.Remove(date);
+                            popisDatuma.Add(date, count);
+                        }
+                    }
+                }
+
+                else
+                    popisDatuma.Add(date, 1);
+            }
+
+            var maxCount = 0;
+            var maxDate = popisDatuma.First().Key;
+            foreach (var item in popisDatuma)
+            {
+                if(item.Value > maxCount)
+                {
+                    maxCount = item.Value;
+                    maxDate = item.Key;
+                }
+            }
+            Console.Clear();
+            Console.WriteLine($"Na dan {maxDate.ToShortDateString()} se rodilo {maxCount} ljudi.");
+            Console.WriteLine("------------------------------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
+        }
+
+        static int ispisGodisnjaDoba(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var godisnjaDoba = new Dictionary<string, int>()
+            {
+                {"proljece", 0},
+                {"ljeto", 0},
+                {"jesen", 0},
+                {"zima", 0},
+            };
+
+            foreach(var person in popisStanovnika)
+            {
+                var count = 0;
+                if(person.Value.dateOfBirth.Month > 3 && person.Value.dateOfBirth.Month < 7)
+                {
+                    godisnjaDoba.TryGetValue("proljece", out count);
+                    count++;
+                    godisnjaDoba.Remove("proljece");
+                    godisnjaDoba.Add("proljece", count);
+                }
+                else if (person.Value.dateOfBirth.Month > 6 && person.Value.dateOfBirth.Month < 9)
+                {
+                    godisnjaDoba.TryGetValue("ljeto", out count);
+                    count++;
+                    godisnjaDoba.Remove("ljeto");
+                    godisnjaDoba.Add("ljeto", count);
+                }
+                else if (person.Value.dateOfBirth.Month > 8 && person.Value.dateOfBirth.Month < 12)
+                {
+                    godisnjaDoba.TryGetValue("jesen", out count);
+                    count++;
+                    godisnjaDoba.Remove("jesen");
+                    godisnjaDoba.Add("jesen", count);
+                }
+                else 
+                {
+                    godisnjaDoba.TryGetValue("zima", out count);
+                    count++;
+                    godisnjaDoba.Remove("zima");
+                    godisnjaDoba.Add("zima", count);
+                }
+
+            }
+            var sorted = from entry in godisnjaDoba orderby entry.Value descending select entry;
+            Console.Clear();
+            foreach (var item in sorted)
+            {
+                Console.WriteLine($"Broj rodenih na {item.Key}: {item.Value}");
+            }
+            Console.WriteLine("---------------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
+        }
+
+        static int ispisNajmladegStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var najmladi = popisStanovnika.First();
+            var datum = popisStanovnika.First().Value.dateOfBirth;
+            foreach (var person in popisStanovnika)
+            {
+                if (person.Value.dateOfBirth > datum)
+                {
+                    najmladi = person;
+                    datum = person.Value.dateOfBirth;
+                }
+            }
+
+            Console.Clear();
+            Console.WriteLine("Najmladi stanovnik je:");
+            Console.WriteLine($"OIB: {najmladi.Key}");
+            Console.WriteLine($"Ime i prezime: {najmladi.Value.nameAndSurname}");
+            Console.WriteLine($"Datum rodenja: {najmladi.Value.dateOfBirth.ToShortDateString()}");
+
+            Console.WriteLine("-------------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+
+            return 0;
+        }
+        static int ispisNajstarijegStanovnika(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var najstariji = popisStanovnika.First();
+            var datum = popisStanovnika.First().Value.dateOfBirth;
+            foreach (var person in popisStanovnika)
+            {
+                if (person.Value.dateOfBirth < datum)
+                {
+                    najstariji = person;
+                    datum = person.Value.dateOfBirth;
+                }
+            }
+
+            Console.Clear();
+            Console.WriteLine("Nastariji stanovnik je:");
+            Console.WriteLine($"OIB: {najstariji.Key}");
+            Console.WriteLine($"Ime i prezime: {najstariji.Value.nameAndSurname}");
+            Console.WriteLine($"Datum rodenja: {najstariji.Value.dateOfBirth.ToShortDateString()}");
+
+            Console.WriteLine("-------------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+
+            return 0;
+        }
+
+        static int ispisProsjecanBrojGodina(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            var sumaGodina = 0;
+            var brojOsoba = 0;
+            foreach(var person in popisStanovnika)
+            {
+                sumaGodina += (DateTime.Now.Year - person.Value.dateOfBirth.Year);
+                brojOsoba++;
+            }
+
+            Console.Clear();
+            Console.WriteLine($"Prosjecan broj godina je: {((float)sumaGodina / brojOsoba).ToString("0.00")}");
+            Console.WriteLine("-----------------------------------------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
+        }
+
+        static int ispisMedijanGodina(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika)
+        {
+            if(popisStanovnika.Count % 2 != 0)
+            {
+                var medianPosition = Convert.ToInt32(Math.Round((double)popisStanovnika.Count() / 2));
+                var medianValue = DateTime.Now.Year - popisStanovnika.ElementAt(medianPosition).Value.dateOfBirth.Year;
+                Console.Clear();
+                Console.WriteLine($"Median godina je: {medianValue}");
+            }
+
+            else
+            {
+                int medianPosition = (popisStanovnika.Count() / 2) - 1;
+                double medianValue = ((DateTime.Now.Year - popisStanovnika.ElementAt(medianPosition).Value.dateOfBirth.Year) + (DateTime.Now.Year - popisStanovnika.ElementAt(medianPosition + 1).Value.dateOfBirth.Year)) / 2.0f;
+                medianValue = Math.Ceiling(medianValue);
+                Console.Clear();
+                Console.WriteLine($"Median godina je: {medianValue}");
+            }
+            Console.WriteLine("--------------------------------------------");
+            Console.WriteLine("Za povratak u glavni izbornik pritisnite tipku 'enter'!");
+            Console.ReadLine();
+            return 0;
         }
 
         static KeyValuePair<string, (string nameAndSurname, DateTime dateOfBirth)> pronadiOIB(Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)> popisStanovnika, string oib)
